@@ -1,0 +1,204 @@
+.dashboard {
+  padding: 32px 48px;
+  background-color: #eff6ff;
+  color: #0f172a;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, sans-serif;
+  box-sizing: border-box;
+  font-size: 18px;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dashboard-header h1 {
+  font-size: 42px;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0 0 20px 0;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Engine Turbine Animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.engine-turbine {
+  width: 44px;
+  height: 44px;
+  color: #2563eb;
+  margin-right: 16px;
+  animation: spin 3s linear infinite;
+}
+
+/* Static Aircraft Icon */
+.flight-hover-icon {
+  width: 34px; 
+  height: 34px;
+  color: #1e40af; /* Matches flight name font color */
+  margin-right: 12px;
+  flex-shrink: 0; 
+}
+
+.dashboard-header h3 {
+  font-size: 26px;
+  font-weight: 600;
+  color: #1e40af; 
+  margin: 0;
+  background: #dbeafe;
+  padding: 10px 24px;
+  border-radius: 28px;
+  border: 2px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  border: 1px solid #dbeafe;
+  margin-bottom: 24px;
+}
+
+.card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eff6ff;
+  padding-bottom: 14px;
+}
+
+.status-banner {
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 36px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.status-normal { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.status-warning { background: #fefce8; color: #dc2626; border: 1px solid #fef08a; }
+.status-critical { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+.main-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.metric-card {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.metric-card h3 {
+  font-size: 16px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 14px 0;
+  font-weight: 700;
+  border: none;
+  padding: 0;
+}
+
+.metric-value {
+  font-size: 40px;
+  font-weight: 800;
+  color: #2563eb;
+}
+
+.list-details p {
+  margin: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  color: #334155;
+}
+
+.timestamp {
+  font-size: 14px !important;
+  color: #64748b !important;
+  margin-top: 28px !important;
+  justify-content: center !important;
+}
+
+.text-red { color: #dc2626; font-weight: 700; }
+.text-green { color: #16a34a; font-weight: 700; }
+
+.critical-alert {
+  background: #ef4444;
+  color: white;
+  padding: 28px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 6px -1px rgb(239 68 68 / 0.3);
+}
+
+.critical-alert h2 {
+  color: white;
+  border: none;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.critical-alert p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.reasoning-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-bottom: 20px;
+  color: #334155;
+  font-size: 18px;
+}
+
+.reasoning-text {
+  color: #475569;
+  line-height: 1.6;
+  font-size: 18px;
+}
+
+.loading-screen {
+  background-color: #eff6ff;
+  color: #1e3a8a;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif;
+}
