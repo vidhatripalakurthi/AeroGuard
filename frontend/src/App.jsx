@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import "./App.css";
 
 function App() {
   const [telemetry, setTelemetry] = useState(null);
@@ -38,32 +39,19 @@ function App() {
     };
 
     fetchData();
-
     const interval = setInterval(fetchData, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
   if (!telemetry) {
     return (
-      <div
-        style={{
-          background: "#0f172a",
-          color: "white",
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "24px",
-        }}
-      >
+      <div className="loading-screen">
         Loading AeroGuard Dashboard...
       </div>
     );
   }
 
   const critical = telemetry.status === "CRITICAL";
-
   const healthScore = Math.min(
     100,
     Math.round((telemetry.predicted_rul / 150) * 100)
@@ -71,296 +59,140 @@ function App() {
 
   const statusColor =
     telemetry.status === "CRITICAL"
-      ? "#dc2626"
+      ? "status-critical"
       : telemetry.status === "WARNING"
-      ? "#f59e0b"
-      : "#16a34a";
+      ? "status-warning"
+      : "status-normal";
 
   const statusText =
     telemetry.status === "CRITICAL"
-      ? "🚨 CRITICAL CONDITION DETECTED"
+      ? "CRITICAL CONDITION DETECTED"
       : telemetry.status === "WARNING"
-      ? "⚠️ WARNING CONDITION DETECTED"
-      : "🟢 SYSTEM NORMAL";
-
-  const cardStyle = {
-    background: "#1e293b",
-    padding: "20px",
-    borderRadius: "12px",
-    textAlign: "center",
-    minWidth: "180px",
-    flex: 1,
-  };
+      ? "WARNING CONDITION DETECTED !!!"
+      : "SYSTEM NORMAL";
 
   return (
-    <div
-      style={{
-        background: "#0f172a",
-        color: "white",
-        minHeight: "100vh",
-        padding: "25px",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <h1 style={{ textAlign: "center", color: "#38bdf8" }}>
-        ✈️ AeroGuard Edge
-      </h1>
+    <div className="dashboard">
+      <header className="dashboard-header">
+        <h1>
+          {/* Animated Engine Turbine Icon */}
+          <svg className="engine-turbine" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 12v-6a4 4 0 0 1 4 4v2z" />
+            <path d="M12 12v6a4 4 0 0 1-4-4v-2z" />
+            <path d="M12 12H6a4 4 0 0 1 4-4h2z" />
+            <path d="M12 12h6a4 4 0 0 1-4 4h-2z" />
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          </svg>
+          AeroGuard Edge
+        </h1>
+        <h3>
+          {/* New Minimalist Hovering Aircraft Icon */}
+          <svg className="flight-hover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21.5 4c0 0-2 .5-3.5 2L14.5 9.5l-8.2-1.8c-1.2-.3-2.4.3-2.8 1.5-.3.9.1 1.9.9 2.4l4.6 2.7-2.6 2.6L3 16.5l-1 1 3.5 2 2 3.5 1-1-.5-3.1 2.6-2.6 2.7 4.6c.5.8 1.5 1.2 2.4.9 1.2-.4 1.8-1.6 1.5-2.8z"></path>
+          </svg>
+          Flight {telemetry.flight_id}
+        </h3>
+      </header>
 
-      <h3
-        style={{
-          textAlign: "center",
-          color: "#cbd5e1",
-          marginBottom: "25px",
-        }}
-      >
-        Flight {telemetry.flight_id}
-      </h3>
-
-      {/* Health Summary */}
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "12px",
-          marginBottom: "20px",
-        }}
-      >
-        <h2>Aircraft Health Score: {healthScore}%</h2>
-
-        <p>Current Cycle: {telemetry.current_cycle}</p>
-
-        <p>
-          Risk Level:
-          {telemetry.status === "CRITICAL"
-            ? " 🔴 HIGH"
-            : telemetry.status === "WARNING"
-            ? " 🟡 MEDIUM"
-            : " 🟢 LOW"}
-        </p>
-
-        <p>
-          Predicted Failure:
-          {critical ? " Engine Valve" : " None"}
-        </p>
-
-        <p>
-          Remaining Useful Life:
-          {telemetry.predicted_rul} Cycles
-        </p>
-
-        <p>
-          Confidence Score:
-          {(telemetry.confidence_score * 100).toFixed(0)}%
-        </p>
-
-        <p>Last Updated: {telemetry.timestamp}</p>
-      </div>
-
-      {/* Status */}
-      <div
-        style={{
-          background: statusColor,
-          padding: "15px",
-          borderRadius: "12px",
-          textAlign: "center",
-          fontWeight: "bold",
-          fontSize: "20px",
-          marginBottom: "20px",
-        }}
-      >
+      {/* Status Banner */}
+      <div className={`status-banner ${statusColor}`}>
         {statusText}
       </div>
 
-      {/* Telemetry Cards */}
-      <div
-        style={{
-          display: "flex",
-          gap: "15px",
-          flexWrap: "wrap",
-          marginBottom: "25px",
-        }}
-      >
-        <div style={cardStyle}>
-          <h3>Core Temperature</h3>
-          <h2>
-            {telemetry.live_metrics.core_temperature.toFixed(1)}
-          </h2>
+      {/* Main Two-Column Layout */}
+      <div className="main-grid">
+        {/* Health Summary */}
+        <div className="card">
+          <h2>Aircraft Health Score: {healthScore}%</h2>
+          <div className="list-details">
+            <p><strong>Current Cycle:</strong> <span>{telemetry.current_cycle}</span></p>
+            <p><strong>Risk Level:</strong> <span className={telemetry.status === "WARNING" ? "text-red" : ""}>{telemetry.status}</span></p>
+            <p><strong>Predicted Failure:</strong> <span>{critical ? "Engine Valve" : "None"}</span></p>
+            <p><strong>Remaining Useful Life:</strong> <span>{telemetry.predicted_rul} Cycles</span></p>
+            <p className="timestamp">Last Updated: {telemetry.timestamp}</p>
+          </div>
         </div>
 
-        <div style={cardStyle}>
-          <h3>Bypass Pressure</h3>
-          <h2>
-            {telemetry.live_metrics.bypass_pressure.toFixed(1)}
-          </h2>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Rotor Vibration</h3>
-          <h2>
-            {telemetry.live_metrics.rotor_vibration.toFixed(1)}
-          </h2>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Predicted RUL</h3>
-          <h2>{telemetry.predicted_rul} Cycles</h2>
+        {/* Digital Twin Summary */}
+        <div className="card">
+          <h2>Digital Twin Subsystems</h2>
+          <div className="list-details">
+            <p><strong>Engine 1:</strong> <span className={critical ? "text-red" : "text-green"}>{critical ? "Critical" : "Healthy"}</span></p>
+            <p><strong>Engine 2:</strong> <span className="text-green">Healthy</span></p>
+            <p><strong>Hydraulic System:</strong> <span className="text-green">Healthy</span></p>
+            <p>
+              <strong>Cooling System:</strong> 
+              <span className={telemetry.status === "WARNING" ? "text-red" : critical ? "text-red" : "text-green"}>
+                {telemetry.status === "WARNING" ? "Warning !!!" : critical ? "Critical" : "Healthy"}
+              </span>
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Critical Alert */}
+      {/* Telemetry Metrics Row */}
+      <div className="metrics-grid">
+        <div className="card metric-card">
+          <h3>Core Temperature</h3>
+          <div className="metric-value">{telemetry.live_metrics.core_temperature.toFixed(1)}°C</div>
+        </div>
+        <div className="card metric-card">
+          <h3>Bypass Pressure</h3>
+          <div className="metric-value">{telemetry.live_metrics.bypass_pressure.toFixed(1)} psi</div>
+        </div>
+        <div className="card metric-card">
+          <h3>Rotor Vibration</h3>
+          <div className="metric-value">{telemetry.live_metrics.rotor_vibration.toFixed(1)} Hz</div>
+        </div>
+        <div className="card metric-card">
+          <h3>Predicted RUL</h3>
+          <div className="metric-value">{telemetry.predicted_rul} Cycles</div>
+        </div>
+      </div>
+
+      {/* Critical Alert Override */}
       {critical && (
-        <div
-          style={{
-            background: "#ef4444",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "25px",
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: "20px",
-          }}
-        >
-          🚨 CRITICAL ALERT
-          <br />
-          Engine Valve Degradation Detected
-          <br />
-          Predicted RUL: {telemetry.predicted_rul} Cycles
+        <div className="critical-alert">
+          <h2>CRITICAL ALERT</h2>
+          <p>Engine Valve Degradation Detected. Predicted RUL: {telemetry.predicted_rul} Cycles.</p>
         </div>
       )}
 
-      {/* Digital Twin */}
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "12px",
-          marginBottom: "25px",
-        }}
-      >
-        <h2>✈️ Digital Twin Aircraft View</h2>
-
-        <p>
-          Engine 1 :
-          {critical ? " 🚨 Critical" : " ✅ Healthy"}
-        </p>
-
-        <p>Engine 2 : ✅ Healthy</p>
-
-        <p>Hydraulic System : ✅ Healthy</p>
-
-        <p>
-          Cooling System :
-          {telemetry.status === "WARNING"
-            ? " ⚠️ Warning"
-            : critical
-            ? " 🚨 Critical"
-            : " ✅ Healthy"}
-        </p>
-      </div>
-
       {/* Graph */}
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "12px",
-          marginBottom: "25px",
-        }}
-      >
-        <h2>📈 Engine Temperature Trend</h2>
-
-        <ResponsiveContainer width="100%" height={350}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="cycle" />
-            <YAxis />
-            <Tooltip />
+      <div className="card">
+        <h2>Engine Temperature Trend</h2>
+        <ResponsiveContainer width="100%" height={380}>
+          <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" />
+            <XAxis dataKey="cycle" stroke="#475569" tick={{ fill: '#475569', fontSize: 14 }} tickLine={false} axisLine={false} />
+            <YAxis stroke="#475569" tick={{ fill: '#475569', fontSize: 14 }} tickLine={false} axisLine={false} />
+            <Tooltip 
+               contentStyle={{ borderRadius: '8px', border: '1px solid #bfdbfe', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '16px' }} 
+            />
             <Line
               type="monotone"
               dataKey="temp"
-              stroke="#38bdf8"
-              strokeWidth={3}
+              stroke="#2563eb"
+              strokeWidth={4}
+              dot={{ r: 5, strokeWidth: 2, fill: "#fff" }}
+              activeDot={{ r: 8, fill: "#2563eb", stroke: "#fff" }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* AI Reasoning */}
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "12px",
-          marginBottom: "25px",
-        }}
-      >
-        <h2>🤖 AI Reasoning Engine</h2>
-
-        <p>Current Cycle: {telemetry.current_cycle}</p>
-
-        <p>
-          Temperature:
-          {telemetry.live_metrics.core_temperature.toFixed(1)}
+      {/* AI Reasoning Engine */}
+      <div className="card">
+        <h2>AI Reasoning Engine</h2>
+        <div className="reasoning-grid">
+          <span><strong>Cycle:</strong> {telemetry.current_cycle}</span>
+          <span><strong>Temperature:</strong> {telemetry.live_metrics.core_temperature.toFixed(1)}</span>
+          <span><strong>Vibration:</strong> {telemetry.live_metrics.rotor_vibration.toFixed(1)}</span>
+        </div>
+        <p className="reasoning-text">
+          The edge-deployed AI model continuously monitors localized degradation patterns across multivariate sensor outputs to predict maintenance requirements proactively before catastrophic failure occurs.
         </p>
-
-        <p>
-          Vibration:
-          {telemetry.live_metrics.rotor_vibration.toFixed(1)}
-        </p>
-
-        <p>
-          The AI model continuously monitors engine
-          degradation patterns and predicts maintenance
-          requirements before failure occurs.
-        </p>
-
-        <p>
-          Confidence Score:
-          {(telemetry.confidence_score * 100).toFixed(0)}%
-        </p>
-      </div>
-
-      {/* Maintenance */}
-      <div
-        style={{
-          background: "#1e293b",
-          padding: "20px",
-          borderRadius: "12px",
-          marginBottom: "25px",
-        }}
-      >
-        <h2>🔧 Maintenance Recommendation</h2>
-
-        <p>
-          Prepare maintenance crew before aircraft arrival.
-        </p>
-
-        <p>
-          Monitor engine condition continuously.
-        </p>
-
-        <p>
-          Schedule inspection if RUL falls below 30.
-        </p>
-      </div>
-
-      {/* Business Impact */}
-      <div
-        style={{
-          background: "#14532d",
-          padding: "20px",
-          borderRadius: "12px",
-        }}
-      >
-        <h2>💰 Business Impact</h2>
-
-        <p>Aircraft Grounding Avoided: ✅</p>
-
-        <p>Turnaround Delay Avoided: 4 Hours</p>
-
-        <p>Estimated Savings: ₹2.5 Lakhs</p>
-
-        <p>Maintenance Prepared Before Landing: ✅</p>
       </div>
     </div>
   );
