@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -9,16 +10,78 @@ import {
 } from "recharts";
 
 function App() {
-  const critical = true;
+  const [telemetry, setTelemetry] = useState(null);
+  const [chartData, setChartData] = useState([]);
 
-  const data = [
-    { cycle: 1, temp: 72 },
-    { cycle: 2, temp: 73 },
-    { cycle: 3, temp: 74 },
-    { cycle: 4, temp: 76 },
-    { cycle: 5, temp: 80 },
-    { cycle: 6, temp: 85 },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/telemetry");
+        const data = await res.json();
+
+        setTelemetry(data);
+
+        setChartData((prev) => {
+          const updated = [
+            ...prev,
+            {
+              cycle: data.current_cycle,
+              temp: data.live_metrics.core_temperature,
+            },
+          ];
+
+          return updated.slice(-15);
+        });
+      } catch (err) {
+        console.log("Error fetching telemetry:", err);
+      }
+    };
+
+    fetchData();
+
+    const interval = setInterval(fetchData, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!telemetry) {
+    return (
+      <div
+        style={{
+          background: "#0f172a",
+          color: "white",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "24px",
+        }}
+      >
+        Loading AeroGuard Dashboard...
+      </div>
+    );
+  }
+
+  const critical = telemetry.status === "CRITICAL";
+
+  const healthScore = Math.min(
+    100,
+    Math.round((telemetry.predicted_rul / 150) * 100)
+  );
+
+  const statusColor =
+    telemetry.status === "CRITICAL"
+      ? "#dc2626"
+      : telemetry.status === "WARNING"
+      ? "#f59e0b"
+      : "#16a34a";
+
+  const statusText =
+    telemetry.status === "CRITICAL"
+      ? "🚨 CRITICAL CONDITION DETECTED"
+      : telemetry.status === "WARNING"
+      ? "⚠️ WARNING CONDITION DETECTED"
+      : "🟢 SYSTEM NORMAL";
 
   const cardStyle = {
     background: "#1e293b",
@@ -39,7 +102,6 @@ function App() {
         fontFamily: "Arial, sans-serif",
       }}
     >
-      {/* Header */}
       <h1 style={{ textAlign: "center", color: "#38bdf8" }}>
         ✈️ AeroGuard Edge
       </h1>
@@ -51,7 +113,7 @@ function App() {
           marginBottom: "25px",
         }}
       >
-        Flight AI-402 | London → Delhi
+        Flight {telemetry.flight_id}
       </h3>
 
       {/* Health Summary */}
@@ -63,16 +125,41 @@ function App() {
           marginBottom: "20px",
         }}
       >
-        <h2>Aircraft Health Score: 67%</h2>
-        <p>Risk Level: 🔴 HIGH</p>
-        <p>Predicted Failure: Engine Valve</p>
-        <p>Remaining Useful Life: 18 Cycles</p>
+        <h2>Aircraft Health Score: {healthScore}%</h2>
+
+        <p>Current Cycle: {telemetry.current_cycle}</p>
+
+        <p>
+          Risk Level:
+          {telemetry.status === "CRITICAL"
+            ? " 🔴 HIGH"
+            : telemetry.status === "WARNING"
+            ? " 🟡 MEDIUM"
+            : " 🟢 LOW"}
+        </p>
+
+        <p>
+          Predicted Failure:
+          {critical ? " Engine Valve" : " None"}
+        </p>
+
+        <p>
+          Remaining Useful Life:
+          {telemetry.predicted_rul} Cycles
+        </p>
+
+        <p>
+          Confidence Score:
+          {(telemetry.confidence_score * 100).toFixed(0)}%
+        </p>
+
+        <p>Last Updated: {telemetry.timestamp}</p>
       </div>
 
       {/* Status */}
       <div
         style={{
-          background: critical ? "#dc2626" : "#16a34a",
+          background: statusColor,
           padding: "15px",
           borderRadius: "12px",
           textAlign: "center",
@@ -81,9 +168,7 @@ function App() {
           marginBottom: "20px",
         }}
       >
-        {critical
-          ? "🚨 CRITICAL CONDITION DETECTED"
-          : "🟢 SYSTEM NORMAL"}
+        {statusText}
       </div>
 
       {/* Telemetry Cards */}
@@ -96,23 +181,29 @@ function App() {
         }}
       >
         <div style={cardStyle}>
-          <h3>Temperature</h3>
-          <h2>85°C</h2>
+          <h3>Core Temperature</h3>
+          <h2>
+            {telemetry.live_metrics.core_temperature.toFixed(1)}
+          </h2>
         </div>
 
         <div style={cardStyle}>
-          <h3>Pressure</h3>
-          <h2>101 PSI</h2>
+          <h3>Bypass Pressure</h3>
+          <h2>
+            {telemetry.live_metrics.bypass_pressure.toFixed(1)}
+          </h2>
         </div>
 
         <div style={cardStyle}>
-          <h3>Vibration</h3>
-          <h2>18</h2>
+          <h3>Rotor Vibration</h3>
+          <h2>
+            {telemetry.live_metrics.rotor_vibration.toFixed(1)}
+          </h2>
         </div>
 
         <div style={cardStyle}>
           <h3>Predicted RUL</h3>
-          <h2>18 Cycles</h2>
+          <h2>{telemetry.predicted_rul} Cycles</h2>
         </div>
       </div>
 
@@ -133,7 +224,7 @@ function App() {
           <br />
           Engine Valve Degradation Detected
           <br />
-          Predicted Failure Within 18 Cycles
+          Predicted RUL: {telemetry.predicted_rul} Cycles
         </div>
       )}
 
@@ -148,10 +239,23 @@ function App() {
       >
         <h2>✈️ Digital Twin Aircraft View</h2>
 
-        <p>Engine 1 : ✅ Healthy</p>
-        <p>Engine 2 : 🚨 Critical</p>
+        <p>
+          Engine 1 :
+          {critical ? " 🚨 Critical" : " ✅ Healthy"}
+        </p>
+
+        <p>Engine 2 : ✅ Healthy</p>
+
         <p>Hydraulic System : ✅ Healthy</p>
-        <p>Cooling System : ⚠️ Warning</p>
+
+        <p>
+          Cooling System :
+          {telemetry.status === "WARNING"
+            ? " ⚠️ Warning"
+            : critical
+            ? " 🚨 Critical"
+            : " ✅ Healthy"}
+        </p>
       </div>
 
       {/* Graph */}
@@ -166,7 +270,7 @@ function App() {
         <h2>📈 Engine Temperature Trend</h2>
 
         <ResponsiveContainer width="100%" height={350}>
-          <LineChart data={data}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="cycle" />
             <YAxis />
@@ -192,22 +296,31 @@ function App() {
       >
         <h2>🤖 AI Reasoning Engine</h2>
 
-        <p>Temperature increased by 18%</p>
-
-        <p>Vibration increased by 23%</p>
+        <p>Current Cycle: {telemetry.current_cycle}</p>
 
         <p>
-          Based on historical degradation patterns, the engine
-          valve shows abnormal wear and has a high probability
-          of failure.
+          Temperature:
+          {telemetry.live_metrics.core_temperature.toFixed(1)}
         </p>
 
         <p>
-          Confidence Score: 92%
+          Vibration:
+          {telemetry.live_metrics.rotor_vibration.toFixed(1)}
+        </p>
+
+        <p>
+          The AI model continuously monitors engine
+          degradation patterns and predicts maintenance
+          requirements before failure occurs.
+        </p>
+
+        <p>
+          Confidence Score:
+          {(telemetry.confidence_score * 100).toFixed(0)}%
         </p>
       </div>
 
-      {/* Recommendation */}
+      {/* Maintenance */}
       <div
         style={{
           background: "#1e293b",
@@ -218,14 +331,16 @@ function App() {
       >
         <h2>🔧 Maintenance Recommendation</h2>
 
-        <p>Replace Engine Valve Assembly immediately.</p>
-
         <p>
-          Notify Delhi maintenance team before landing.
+          Prepare maintenance crew before aircraft arrival.
         </p>
 
         <p>
-          Keep replacement component ready at Gate A12.
+          Monitor engine condition continuously.
+        </p>
+
+        <p>
+          Schedule inspection if RUL falls below 30.
         </p>
       </div>
 
